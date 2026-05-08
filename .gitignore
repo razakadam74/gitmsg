@@ -141,3 +141,15 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# --- gitmsg project-specific ---
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Editor / IDE settings (don't impose preferences on contributors)
+.vscode/
+.idea/
+*.swp
+*.swo
