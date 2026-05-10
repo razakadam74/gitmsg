@@ -25,7 +25,11 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    // Suppress TS 6.0 deprecation warning for `baseUrl` synthesized by tsup's DTS build.
+    // Revisit when upgrading to TypeScript 7.
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
