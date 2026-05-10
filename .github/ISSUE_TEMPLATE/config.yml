@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/razakadam74/gitmsg/discussions
+    about: Questions, ideas, and "show your generated messages"

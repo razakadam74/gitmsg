@@ -1,0 +1,31 @@
+name: Bad commit message
+description: gitmsg generated a poor message for a real diff
+labels: ['bug', 'bad-message']
+body:
+  - type: textarea
+    id: diff
+    attributes:
+      label: Staged diff
+      description: Output of `git diff --staged` (anonymise as needed)
+      render: diff
+    validations:
+      required: true
+  - type: input
+    id: produced
+    attributes:
+      label: Message gitmsg produced
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Message you would have expected
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: gitmsg version
+      placeholder: '0.0.0'
+    validations:
+      required: true
