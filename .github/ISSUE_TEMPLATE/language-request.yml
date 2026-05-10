@@ -1,0 +1,24 @@
+name: Language extractor request
+description: Request support for a new language
+labels: ['enhancement', 'language']
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: 'Python, Go, Rust, ...'
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example diff and desired message
+      render: diff
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Are you willing to contribute the extractor?
+      options:
+        - label: "Yes, I'll open a PR"
