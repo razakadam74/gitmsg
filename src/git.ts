@@ -1,4 +1,39 @@
+import { spawn } from 'node:child_process';
 import type { DiffSummary, FileChange } from './types.js';
+
+export type GitRunner = (args: string[], cwd?: string) => Promise<string>;
+
+/** Run a git command and return stdout. Rejects on non-zero exit. */
+export async function runGit(args: string[], cwd?: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('git', args, {
+      cwd,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      shell: false,
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (c) => (stdout += c.toString('utf8')));
+    child.stderr.on('data', (c) => (stderr += c.toString('utf8')));
+
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) resolve(stdout);
+      else reject(new Error(`git ${args.join(' ')} failed (${code}): ${stderr.trim()}`));
+    });
+  });
+}
+
+/** Read the staged diff and return a structured summary. */
+export async function getStagedDiff(cwd?: string, run: GitRunner = runGit): Promise<DiffSummary> {
+  const out = await run(
+    ['diff', '--staged', '--no-color', '--no-ext-diff', '-U0', '--find-renames'],
+    cwd,
+  );
+  return parseDiff(out);
+}
 
 /**
  * Parse unified-diff text (typically produced with -U0) into a DiffSummary.

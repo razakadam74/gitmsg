@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDiff } from '../src/git.js';
+import { getStagedDiff, parseDiff, type GitRunner } from '../src/git.js';
 
 describe('parseDiff', () => {
   /**
@@ -126,5 +126,55 @@ describe('parseDiff', () => {
       addedLines: ['export const x = 1;', ''],
       removedLines: [],
     });
+  });
+});
+
+describe('getStagedDiff', () => {
+  it('passes the right args to git and parses the output', async () => {
+    let capturedArgs: string[] | undefined;
+    let capturedCwd: string | undefined;
+    const fakeRun: GitRunner = async (args, cwd) => {
+      capturedArgs = args;
+      capturedCwd = cwd;
+      return [
+        'diff --git a/foo.ts b/foo.ts',
+        'new file mode 100644',
+        '--- /dev/null',
+        '+++ b/foo.ts',
+        '@@ -0,0 +1,1 @@',
+        '+hello',
+      ].join('\n');
+    };
+
+    const summary = await getStagedDiff('/repos/x', fakeRun);
+
+    expect(capturedArgs).toEqual([
+      'diff',
+      '--staged',
+      '--no-color',
+      '--no-ext-diff',
+      '-U0',
+      '--find-renames',
+    ]);
+    expect(capturedCwd).toBe('/repos/x');
+
+    expect(summary.files).toHaveLength(1);
+    expect(summary.files[0]).toMatchObject({
+      path: 'foo.ts',
+      kind: 'add',
+    });
+  });
+
+  it('returns an empty summary when nothing is staged', async () => {
+    const fakeRun: GitRunner = async () => '';
+    const summary = await getStagedDiff(undefined, fakeRun);
+    expect(summary.files).toEqual([]);
+  });
+
+  it('propagates errors from the runner', async () => {
+    const fakeRun: GitRunner = async () => {
+      throw new Error('git not on PATH');
+    };
+    await expect(getStagedDiff(undefined, fakeRun)).rejects.toThrow('git not on PATH');
   });
 });

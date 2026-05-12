@@ -1,3 +1,5 @@
 export type * from './types.js';
+export type { GitRunner } from './git.js';
+
 export { format, type FormatOptions } from './format.js';
-export { parseDiff } from './git.js';
+export { runGit, getStagedDiff, parseDiff } from './git.js';
