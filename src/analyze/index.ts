@@ -16,6 +16,7 @@ export function analyze(diff: DiffSummary): CommitMessage {
 
   if (
     type === 'chore' &&
+    files.length > 0 &&
     files.every((f) =>
       /package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|requirements\.txt|go\.(mod|sum)|Cargo\.(toml|lock)/.test(
         f.path,

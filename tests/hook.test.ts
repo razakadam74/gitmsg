@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, readFileSync, existsSync, statSync } from 'node:fs
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { installHook } from '../src/hook.js';
+import { HOOK_BODY, installHook } from '../src/hook.js';
 
 describe('installHook', () => {
   let repoDir: string;
@@ -38,5 +38,11 @@ describe('installHook', () => {
     const mode = statSync(hookPath).mode & 0o777;
     //owner must have execute; group + others should have read+execute
     expect(mode & 0o100).toBe(0o100);
+  });
+
+  it.runIf(process.platform !== 'win32')('HOOK_BODY is valid POSIX sh (sh -n parses it)', () => {
+    const res = spawnSync('sh', ['-n', '-'], { input: HOOK_BODY });
+    expect(res.status).toBe(0);
+    expect(res.stderr.toString()).toBe('');
   });
 });

@@ -47,6 +47,12 @@ describe('analyze — chore-deps scope override', () => {
     expect(result.type).toBe('docs');
     expect(result.scope).not.toBe('deps');
   });
+
+  it('does NOT force scope=deps when files is empty (vacuous-truth guard)', () => {
+    const result = analyze(diff([]));
+    expect(result.type).toBe('chore');
+    expect('scope' in result).toBe(false);
+  });
 });
 
 describe('analyze — every CommitType has a defensible output', () => {

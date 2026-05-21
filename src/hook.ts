@@ -4,7 +4,7 @@ import { runGit } from './git.js';
 
 const HOOK_NAME = 'prepare-commit-msg';
 
-const HOOK_BODY = `#!/bin/sh
+export const HOOK_BODY = `#!/bin/sh
 # Installed by gitmsg
 # Skips when a message is already provided (merge, squash, -m, -F, template).
 case "$2" in
