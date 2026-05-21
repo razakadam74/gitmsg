@@ -1,4 +1,5 @@
 import type { CommitType, FileChange } from '../types.js';
+import { DEPS_PATTERN } from './patterns.js';
 
 const TEST_PATTERN = /(^|\/)(__tests__|tests?|spec)\/|\.(test|spec)\.[a-z0-9]+$/i;
 
@@ -7,8 +8,6 @@ const MARKDOWN_PATTERN = /\.(md|mdx|rst|adoc)$/i;
 
 const CI_PATTERN =
   /^\.github\/(workflows|actions)\/|(^|\/)(\.gitlab-ci\.yml|\.travis\.yml|azure-pipelines\.yml|Jenkinsfile|\.circleci\/)/;
-const DEPS_PATTERN =
-  /(^|\/)(package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|requirements\.txt|Pipfile(\.lock)?|go\.(mod|sum)|Cargo\.(toml|lock)|Gemfile(\.lock)?|composer\.(json|lock))$/;
 const BUILD_PATTERN =
   /(^|\/)(tsup\.config\.|vite\.config\.|rollup\.config\.|webpack\.config\.|esbuild\.|Makefile|Dockerfile|\.dockerignore|build\.gradle|pom\.xml|setup\.py|pyproject\.toml)/;
 
