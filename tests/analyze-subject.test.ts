@@ -147,6 +147,17 @@ describe('detectSubject — chore', () => {
       ),
     ).toBe('misc maintenance');
   });
+
+  it('"update dependencies" for Pipfile + Pipfile.lock (Python ecosystem)', () => {
+    expect(
+      detectSubject(
+        subject({
+          type: 'chore',
+          files: [file({ path: 'Pipfile' }), file({ path: 'Pipfile.lock' })],
+        }),
+      ),
+    ).toBe('update dependencies');
+  });
 });
 
 describe('detectSubject — style', () => {

@@ -1,5 +1,6 @@
 import { symbolDelta } from '../languages/index.js';
 import type { CommitMessage, DiffSummary } from '../types.js';
+import { DEPS_PATTERN } from './patterns.js';
 import { detectScope } from './scope.js';
 import { detectSubject } from './subject.js';
 import { detectType } from './type.js';
@@ -14,15 +15,7 @@ export function analyze(diff: DiffSummary): CommitMessage {
   const message: CommitMessage = { type, subject };
   if (scope) message.scope = scope;
 
-  if (
-    type === 'chore' &&
-    files.length > 0 &&
-    files.every((f) =>
-      /package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|requirements\.txt|go\.(mod|sum)|Cargo\.(toml|lock)/.test(
-        f.path,
-      ),
-    )
-  ) {
+  if (type === 'chore' && files.length > 0 && files.every((f) => DEPS_PATTERN.test(f.path))) {
     message.scope = 'deps';
   }
 

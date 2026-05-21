@@ -53,6 +53,13 @@ describe('analyze — chore-deps scope override', () => {
     expect(result.type).toBe('chore');
     expect('scope' in result).toBe(false);
   });
+
+  it('forces scope=deps for Pipfile + Pipfile.lock (Python ecosystem)', () => {
+    const result = analyze(diff([file({ path: 'Pipfile' }), file({ path: 'Pipfile.lock' })]));
+    expect(result.type).toBe('chore');
+    expect(result.scope).toBe('deps');
+    expect(result.subject).toBe('update dependencies');
+  });
 });
 
 describe('analyze — every CommitType has a defensible output', () => {

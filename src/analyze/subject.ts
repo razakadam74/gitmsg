@@ -1,5 +1,6 @@
 import { basename } from 'node:path';
 import type { CommitType, FileChange, SymbolDelta } from '../types.js';
+import { DEPS_PATTERN } from './patterns.js';
 
 function baseName(p: string): string {
   return basename(p).replace(/\.[^.]+$/, '');
@@ -48,11 +49,7 @@ export function detectSubject({ type, files, symbols }: SubjectInput): string {
   }
 
   if (type === 'chore') {
-    const isDeps = files.every((f) =>
-      /package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|requirements\.txt|go\.(mod|sum)|Cargo\.(toml|lock)/.test(
-        f.path,
-      ),
-    );
+    const isDeps = files.every((f) => DEPS_PATTERN.test(f.path));
     if (isDeps) return 'update dependencies';
     return 'misc maintenance';
   }
