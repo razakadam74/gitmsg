@@ -1,0 +1,8 @@
+diff --git a/src/utils/parser.ts b/src/utils/parser.ts
+index 1234..5678 100644
+--- a/src/utils/parser.ts
++++ b/src/utils/parser.ts
+@@ -10,2 +10,3 @@
+ export function parse(input: string) {
++  // fix: handle null input that previously caused a crash
+   if (input == null) return null;

@@ -1,0 +1,7 @@
+diff --git a/README.md b/README.md
+index 1234567..89abcdef 100644
+--- a/README.md
++++ b/README.md
+@@ -10,1 +10,1 @@
+-Old description.
++Updated description with installation steps.
