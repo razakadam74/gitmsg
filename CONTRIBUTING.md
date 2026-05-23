@@ -36,6 +36,23 @@ Common scripts:
 | `npm run format`       | Prettier write              |
 | `npm run format:check` | Prettier check (used in CI) |
 
+## Adding a fixture
+
+If `gitmsg` produced a wrong commit message on one of your diffs, the highest-leverage thing you can do is **add it as a fixture**. Five steps:
+
+1. **Capture the diff.** From the repo where you saw the bad output, run:
+   ```bash
+   git diff --staged --no-color -U0 --find-renames > /tmp/my-fixture.diff
+   ```
+2. **Anonymise.** Strip paths, symbol names, credentials, and any other identifying content. Preserve the _shape_ (file count, scope-bearing prefixes, change kinds).
+3. **Name it.** `tests/fixtures/<type>-<scope>-<noun>.diff`, e.g. `feat-billing-discount.diff`. The base name becomes the test name.
+4. **Record the expected output.** Create an empty `<name>.expected.txt` and run `npm test -- fixtures` — your fixture will fail with a diff between empty and the _current_ output. Decide what the message _should_ be, then write that into the expected file. If the current output is correct, paste it in as-is.
+5. **Commit.** A fixture-only PR doesn't need code review of `src/` — the reviewer reads the diff, reads the expected output, and asks "is this what we want?"
+
+Trailing newlines in `.expected.txt` are trimmed before comparison; don't worry about them.
+
+**If your fixture surfaces a bug**, the fix goes in a _separate_ PR. Fixture-as-regression-test first; behaviour change second. This makes the fix's PR show the message difference as a one-line `.expected.txt` change.
+
 ## Pull request workflow
 
 1. Fork, branch off `main`, push to your fork.

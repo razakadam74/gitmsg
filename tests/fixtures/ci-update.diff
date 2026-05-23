@@ -1,0 +1,7 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 1111..2222 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -5,1 +5,1 @@
+-      - run: npm test
++      - run: npm run test:coverage
