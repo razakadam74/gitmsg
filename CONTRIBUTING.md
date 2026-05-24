@@ -3,8 +3,8 @@
 Thanks for considering a contribution! gitmsg is a small, focused tool, and the most valuable contributions are usually:
 
 1. **New fixtures** — real diffs that produce bad commit messages.
-2. **Heuristic improvements** — better type/scope/subject detection.
-3. **Language extractors** — symbol extraction for new languages.
+2. **Heuristic improvements** — better type/scope/subject detection. Start at [`docs/heuristics.md`](docs/heuristics.md).
+3. **Language extractors** — symbol extraction for new languages. Start at [`docs/heuristics.md` § Language extractors](docs/heuristics.md#5-language-extractors) and [`docs/languages/`](docs/languages/).
 
 ## Ground rules
 
@@ -66,6 +66,7 @@ Trailing newlines in `.expected.txt` are trimmed before comparison; don't worry 
 - [ ] `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build` all pass locally
 - [ ] No new runtime dependencies (or strong justification in PR description)
 - [ ] Commit message follows [Conventional Commits](https://www.conventionalcommits.org/) — appropriate, since this is gitmsg
+- [ ] If this PR changes a rule documented in [`docs/heuristics.md`](docs/heuristics.md) or [`docs/languages/`](docs/languages/), the doc was updated in the same PR
 
 ## Reporting security issues
 

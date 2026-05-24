@@ -10,8 +10,6 @@ feat(auth): add login
 
 ## Install
 
-Once v0.1 is published:
-
 ```bash
 npm i -g @razakadam74/gitmsg
 ```
@@ -34,9 +32,7 @@ There are roughly three options for commit messages today:
 
 ## Status
 
-🚧 Early development. Pre-v0.1 — not yet on npm. APIs and behaviour will change before v1.0.
-
-The reference implementation is complete; this repository is being rebuilt step-by-step in public as a learning exercise. See [the heuristics doc](docs/heuristics.md) (coming) for how decisions are made.
+🚧 Early development. v0.1.0 is published as [`@razakadam74/gitmsg`](https://www.npmjs.com/package/@razakadam74/gitmsg). APIs and behaviour may still change before v1.0.
 
 ## Contributing
 
