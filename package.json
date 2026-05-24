@@ -1,6 +1,9 @@
 {
-  "name": "gitmsg",
+  "name": "@razakadam74/gitmsg",
   "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Fast, offline, deterministic Conventional Commit message generator. No LLM, no API key, no network.",
   "keywords": [
     "git",

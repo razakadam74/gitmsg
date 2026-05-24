@@ -8,6 +8,16 @@ $ gitmsg
 feat(auth): add login
 ```
 
+## Install
+
+Once v0.1 is published:
+
+```bash
+npm i -g @razakadam74/gitmsg
+```
+
+The binary on your `PATH` is `gitmsg` — the scoped package name is only used at install time. The unscoped `gitmsg` name on npm is currently held by an inactive maintainer; this project publishes under a personal scope until that resolves.
+
 ## What it does
 
 `gitmsg` reads your staged git diff and prints a [Conventional Commit](https://www.conventionalcommits.org/) message in milliseconds. It runs entirely offline, sends nothing anywhere, and produces the same output for the same diff every time.
@@ -24,7 +34,7 @@ There are roughly three options for commit messages today:
 
 ## Status
 
-🚧 Early development. Not yet on npm. APIs and behaviour will change.
+🚧 Early development. Pre-v0.1 — not yet on npm. APIs and behaviour will change before v1.0.
 
 The reference implementation is complete; this repository is being rebuilt step-by-step in public as a learning exercise. See [the heuristics doc](docs/heuristics.md) (coming) for how decisions are made.
 
