@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FileChange } from '../src/types.js';
 import { extractorFor, extractors, symbolDelta } from '../src/languages/index.js';
+import { pyExtractor } from '../src/languages/py.js';
 import { tsExtractor } from '../src/languages/ts.js';
 
 const file = (overrides: Partial<FileChange> = {}): FileChange => ({
@@ -15,6 +16,10 @@ describe('extractors registry', () => {
   it('includes tsExtractor', () => {
     expect(extractors).toContain(tsExtractor);
   });
+
+  it('includes pyExtractor', () => {
+    expect(extractors).toContain(pyExtractor);
+  });
 });
 
 describe('extractorFor', () => {
@@ -22,7 +27,11 @@ describe('extractorFor', () => {
     expect(extractorFor(p)).toBe(tsExtractor),
   );
 
-  it.each(['a.py', 'a.go', 'a.rs', 'a.md', 'image.png', 'a.tsbuildinfo'])(
+  it.each(['a.py', 'a.pyi'])('returns pyExtractor for %s', (p) =>
+    expect(extractorFor(p)).toBe(pyExtractor),
+  );
+
+  it.each(['a.go', 'a.rs', 'a.md', 'image.png', 'a.tsbuildinfo', 'a.pyc', 'a.pyx'])(
     'returns undefined for %s',
     (p) => expect(extractorFor(p)).toBeUndefined(),
   );
