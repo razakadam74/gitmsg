@@ -158,11 +158,20 @@ The cancellation key omits `exported`. A private-to-public flip (`function foo` 
 
 ### Adding a new language
 
-1. Create `src/languages/<lang>.ts` exporting `<lang>Extractor`.
-2. Add docs at `docs/languages/<lang>.md` covering: file extensions, the pattern ladder, blind spots, and any language-specific decisions.
-3. Register in the `extractors` array in `src/languages/index.ts`.
-4. Mirror `tests/languages-ts.test.ts` — one test per declaration form, one for dedup, one negative-path on `matches()`.
-5. Add at least one fixture pair under `tests/fixtures/` demonstrating a real diff in the language.
+Design-first, code-second. Lock the calls before you write the regex.
+
+1. **Decide the design calls before touching code.** Three questions, language-specific:
+   - **Where does `exported` come from?** Three precedents: TypeScript reads it from the **regex row** (the `export` literal is in the pattern), Python reads it from the **name** (PEP 8 leading-underscore convention), C# reads it from the **line prefix** (`/^\s*public\s/`). Pick the model that fits the language's visibility rules; document it in `docs/languages/<lang>.md`.
+   - **Top-level only, or any indentation?** Python uses `^` (column-0 only — methods are excluded by anchor). C# uses `^\s*` (declarations nested in `namespace { }` blocks are valid). The anchor is your blind-spot policy in disguise.
+   - **Which symbol shapes earn a row?** Map language constructs onto the `SymbolKind` union (`function | class | const | interface | type | method`). C# `struct`/`record` → `class`; `enum`/`delegate` → `type`. Don't extend the union casually.
+2. **Create `src/languages/<lang>.ts`** exporting `<lang>Extractor`. Keep the regex ladder small (4–6 rows is typical) and single-line — see the regex discipline note below.
+3. **Register in the `extractors` array** in `src/languages/index.ts`.
+4. **Update `tests/languages-index.test.ts`** — registry assertion (`expect(extractors).toContain(<lang>Extractor)`), positive-path `extractorFor` cases for matching extensions, and **negative** cases for sibling-but-different extensions (e.g. `.razor`/`.cshtml` for C#, `.pyx` for Python). Without these, a future regex tweak that accidentally widens `matches()` won't fail anything.
+5. **Mirror `tests/languages-ts.test.ts`** — one test per declaration form, one for dedup, one negative-path on `matches()`. The positive/negative split exists to pin down both what is and isn't extracted; both halves are required.
+6. **Add at least one fixture pair** under `tests/fixtures/` demonstrating a real diff in the language. `fixtures.test.ts` picks it up automatically by glob. This is a contract test against the whole pipeline (parse → analyze → format), not just the extractor.
+7. **Add docs at `docs/languages/<lang>.md`** covering: file extensions (positive list and a deliberately-not-matched list), the pattern ladder, where `exported` comes from, blind spots, and any language-specific decisions.
+8. **Create a changeset** with `npx changeset` (minor bump) — without it, the release PR won't fire. The changeset summary should name the language and what it enables, e.g. _"Add C# language extractor for symbol-aware subject lines on .cs and .csx files."_
+9. **Run all 5 gates** before opening the PR: `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build`.
 
 Keep regex single-line. If your language genuinely needs multi-line parsing (Python multi-line `def` signatures, Rust trait bodies), file an issue rather than nesting state — the tree-sitter upgrade is the right vehicle.
 

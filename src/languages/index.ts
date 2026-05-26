@@ -1,8 +1,9 @@
 import type { CodeSymbol, FileChange, LanguageExtractor, SymbolDelta } from '../types.js';
+import { csExtractor } from './cs.js';
 import { pyExtractor } from './py.js';
 import { tsExtractor } from './ts.js';
 
-export const extractors: LanguageExtractor[] = [tsExtractor, pyExtractor];
+export const extractors: LanguageExtractor[] = [tsExtractor, pyExtractor, csExtractor];
 
 export function extractorFor(path: string): LanguageExtractor | undefined {
   return extractors.find((e) => e.matches(path));
