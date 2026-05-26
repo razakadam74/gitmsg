@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FileChange } from '../src/types.js';
 import { extractorFor, extractors, symbolDelta } from '../src/languages/index.js';
+import { csExtractor } from '../src/languages/cs.js';
 import { pyExtractor } from '../src/languages/py.js';
 import { tsExtractor } from '../src/languages/ts.js';
 
@@ -20,6 +21,10 @@ describe('extractors registry', () => {
   it('includes pyExtractor', () => {
     expect(extractors).toContain(pyExtractor);
   });
+
+  it('includes csExtractor', () => {
+    expect(extractors).toContain(csExtractor);
+  });
 });
 
 describe('extractorFor', () => {
@@ -31,10 +36,23 @@ describe('extractorFor', () => {
     expect(extractorFor(p)).toBe(pyExtractor),
   );
 
-  it.each(['a.go', 'a.rs', 'a.md', 'image.png', 'a.tsbuildinfo', 'a.pyc', 'a.pyx'])(
-    'returns undefined for %s',
-    (p) => expect(extractorFor(p)).toBeUndefined(),
+  it.each(['a.cs', 'a.csx'])('returns csExtractor for %s', (p) =>
+    expect(extractorFor(p)).toBe(csExtractor),
   );
+
+  it.each([
+    'a.go',
+    'a.rs',
+    'a.md',
+    'image.png',
+    'a.tsbuildinfo',
+    'a.pyc',
+    'a.pyx',
+    'a.csproj',
+    'a.razor',
+    'a.cshtml',
+    'a.vb',
+  ])('returns undefined for %s', (p) => expect(extractorFor(p)).toBeUndefined());
 });
 
 describe('symbolDelta', () => {
