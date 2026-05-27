@@ -53,6 +53,24 @@ Trailing newlines in `.expected.txt` are trimmed before comparison; don't worry 
 
 **If your fixture surfaces a bug**, the fix goes in a _separate_ PR. Fixture-as-regression-test first; behaviour change second. This makes the fix's PR show the message difference as a one-line `.expected.txt` change.
 
+## Re-rendering the demo gif
+
+The README's demo gif is generated from [`docs/demo.tape`](docs/demo.tape) with [VHS](https://github.com/charmbracelet/vhs). The `.tape` script bootstraps a throwaway repo in a temp dir, so there's no committed fixture to drift.
+
+Requirements (Linux or macOS — VHS depends on `ttyd`, which has no native Windows build; use WSL on Windows):
+
+- `vhs` (`brew install vhs` / Linux `.deb` from [releases](https://github.com/charmbracelet/vhs/releases))
+- `ttyd` and `ffmpeg` (your package manager)
+- `gitmsg` on `PATH` (`npm i -g @razakadam74/gitmsg`)
+
+Then from the repo root:
+
+```bash
+vhs docs/demo.tape
+```
+
+This overwrites `docs/demo.gif`. Commit both files together so the source and the rendered artifact stay in sync.
+
 ## Pull request workflow
 
 1. Fork, branch off `main`, push to your fork.
