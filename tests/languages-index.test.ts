@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { FileChange } from '../src/types.js';
 import { extractorFor, extractors, symbolDelta } from '../src/languages/index.js';
 import { csExtractor } from '../src/languages/cs.js';
+import { goExtractor } from '../src/languages/go.js';
 import { pyExtractor } from '../src/languages/py.js';
 import { tsExtractor } from '../src/languages/ts.js';
 
@@ -25,6 +26,10 @@ describe('extractors registry', () => {
   it('includes csExtractor', () => {
     expect(extractors).toContain(csExtractor);
   });
+
+  it('includes goExtractor', () => {
+    expect(extractors).toContain(goExtractor);
+  });
 });
 
 describe('extractorFor', () => {
@@ -40,9 +45,16 @@ describe('extractorFor', () => {
     expect(extractorFor(p)).toBe(csExtractor),
   );
 
+  it.each(['a.go', 'main_test.go', 'pkg/foo/bar.go'])('returns goExtractor for %s', (p) =>
+    expect(extractorFor(p)).toBe(goExtractor),
+  );
+
   it.each([
-    'a.go',
     'a.rs',
+    'a.gohtml',
+    'a.tmpl',
+    'go.mod',
+    'go.sum',
     'a.md',
     'image.png',
     'a.tsbuildinfo',

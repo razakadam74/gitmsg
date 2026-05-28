@@ -1,0 +1,25 @@
+diff --git a/src/api/handler.go b/src/api/handler.go
+new file mode 100644
+index 0000000..2222222
+--- /dev/null
++++ b/src/api/handler.go
+@@ -0,0 +1,20 @@
++package api
++
++type OrderHandler struct {
++    db *DB
++}
++
++func NewOrderHandler(db *DB) *OrderHandler {
++    return &OrderHandler{db: db}
++}
++
++func ProcessOrder(o Order) error {
++    if o.ID == 0 {
++        return ErrInvalid
++    }
++    return nil
++}
++
++const MaxRetries = 3
++
