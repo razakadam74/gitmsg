@@ -50,7 +50,63 @@ describe('detectScope', () => {
       files: [file('packages/README.md')],
       expected: undefined,
     },
+    {
+      name: 'frequency: 3-of-4 cluster wins despite README straggler',
+      files: [
+        file('src/auth/jwt.ts'),
+        file('src/auth/middleware.ts'),
+        file('src/auth/utils.ts'),
+        file('README.md'),
+      ],
+      expected: 'auth',
+    },
+    {
+      name: 'frequency: 2-of-4 at exactly 50% floor -> auth',
+      files: [
+        file('src/auth/x.ts'),
+        file('src/auth/y.ts'),
+        file('src/billing/a.ts'),
+        file('src/inventory/b.ts'),
+      ],
+      expected: 'auth',
+    },
+    {
+      name: 'frequency: exact tie 2/2 -> undefined',
+      files: [
+        file('src/auth/x.ts'),
+        file('src/auth/y.ts'),
+        file('src/billing/a.ts'),
+        file('src/billing/b.ts'),
+      ],
+      expected: undefined,
+    },
+    {
+      name: 'frequency: dominant noise segment -> undefined (noise filter wins)',
+      files: [
+        file('tests/a.test.ts'),
+        file('tests/b.test.ts'),
+        file('tests/c.test.ts'),
+        file('src/auth/jwt.ts'),
+      ],
+      expected: undefined,
+    },
+    {
+      name: 'PR #45 dogfood repro: docs-heavy mixed-root diff -> undefined (not feat(scope))',
+      files: [
+        file('docs/demo.tape'),
+        file('docs/demo.gif'),
+        file('README.md'),
+        file('CONTRIBUTING.md'),
+        file('.prettierignore'),
+      ],
+      expected: undefined,
+    },
   ])('$name', ({ files, expected }) => {
     expect(detectScope(files)).toBe(expected);
+  });
+
+  it('does not pick rung 3 when rung 2 already fires (regression guard)', () => {
+    const files = [file('src/auth/x.ts'), file('src/auth/y.ts')];
+    expect(detectScope(files)).toBe('auth');
   });
 });

@@ -29,6 +29,38 @@ function sanitizeScope(s: string): string {
     .toLowerCase();
 }
 
+function dominantFirstSegment(files: FileChange[]): string | undefined {
+  if (files.length < 2) return undefined;
+
+  const segments = files.map((f) => stripSourcePrefix(f.path)).map((p) => p.split('/')[0] ?? '');
+
+  const counts = new Map<string, number>();
+  for (const seg of segments) {
+    if (!seg) continue;
+
+    if (/\.[a-z0-9]+$/i.test(seg)) continue; // root-level files like README.md
+    const lower = seg.toLowerCase();
+    if (NOISE_SCOPES.has(lower) || MONOREPO_ROOTS.has(lower)) continue;
+    counts.set(seg, (counts.get(seg) ?? 0) + 1);
+  }
+
+  let bestSeg: string | undefined;
+  let bestCount = 0;
+  for (const [seg, count] of counts) {
+    if (count > bestCount) {
+      bestSeg = seg;
+      bestCount = count;
+    } else if (count === bestCount) {
+      bestSeg = undefined; // tie, no clear winner
+    }
+  }
+
+  if (!bestSeg || bestCount < 2) return undefined; // need at least 2 files sharing the segment
+  if (bestCount / files.length < 0.5) return undefined; // segment should be common among the files
+
+  return bestSeg;
+}
+
 export function detectScope(files: FileChange[]): string | undefined {
   if (files.length === 0) return undefined;
 
@@ -39,6 +71,7 @@ export function detectScope(files: FileChange[]): string | undefined {
       paths.map((p) => /^(?:packages|apps|libs)\/([^/]+)\//.exec(p)?.[1] ?? ''),
     );
 
+    // rung 1 - all files are under a monorepo root and share the same immediate subdir
     if (names.size === 1) {
       const only = [...names][0];
       if (only) return sanitizeScope(only);
@@ -54,12 +87,21 @@ export function detectScope(files: FileChange[]): string | undefined {
   const lower = firstSeg.toLowerCase();
   if (NOISE_SCOPES.has(lower) || MONOREPO_ROOTS.has(lower)) return undefined;
 
+  // rung 2 - all share the same first segment (and it's not a file with extension)
   const allShare =
     segments.every((s) => s.length > 1 && s[0] === firstSeg) && !/\.[a-z0-9]+$/i.test(firstSeg);
-  if (!allShare) return undefined;
 
-  const sanitized = sanitizeScope(firstSeg);
+  if (allShare) {
+    const sanitized = sanitizeScope(firstSeg);
+    if (sanitized && sanitized.length <= 24) return sanitized;
+    return undefined;
+  }
 
-  if (!sanitized || sanitized.length > 24) return undefined;
-  return sanitized;
+  // rung 3 - find the most common first segment among the files (ignoring noise segments and root-level files)
+  const dominant = dominantFirstSegment(files);
+  if (dominant) {
+    const sanitized = sanitizeScope(dominant);
+    if (sanitized && sanitized.length <= 24) return sanitized;
+  }
+  return undefined;
 }

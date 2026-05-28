@@ -55,10 +55,11 @@ Covers `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `requ
 
 ## 2. Scope detection
 
-Two-rung algorithm. Returns `undefined` rather than guessing when no scope is obvious.
+Three-rung algorithm. Returns `undefined` rather than guessing when no scope is obvious.
 
 1. **Strict monorepo** — if every file matches `(packages|apps|libs)/X/…` and every match has the same `X`, the scope is `X`. Mixed packages → no scope.
 2. **Common prefix** — otherwise, strip a leading `src/`, `lib/`, `app/`, or `source/` (single pass), then take the common first path segment if every file shares it.
+3. **Dominant first segment** — if rung 2 fails because one or two files break the share (typically root-level `README.md`, `CONTRIBUTING.md`, or a stray config), take the most common first segment when it covers **≥ 50% of files AND at least 2 files**, with a single clear winner. Noise-segment names (see filter below) and monorepo roots can never _win_ rung 3, but they still **count toward the denominator** — a 2-of-4 cluster where the other 2 are in `tests/` is still 2-of-4, not 2-of-2.
 
 A sanitizer (`sanitizeScope`) lowercases the result, replaces non-alphanumerics with `-`, collapses runs, and trims. Output capped at 24 characters.
 
@@ -76,6 +77,10 @@ First-segment values that are never valid scopes:
 > 💡 **Decision:** The noise filter checks only the **first** segment. `packages/auth/tests/jwt.test.ts` produces scope `auth` — the inner `tests/` is the package's internal layout, not a top-level concern.
 
 > 💡 **Decision:** Single-segment paths like `README.md` produce no scope. The `s.length > 1` guard rejects "the scope of this commit is `README.md`".
+
+> 💡 **Decision:** Rung 3 counts noise files in the denominator but bars them from winning. The alternative — exclude noise entirely — would let a 1-of-1 `src/auth` + 3-of-3 `tests/` diff emit `auth`, which over-claims the scope of a mostly-test change. Path-only conservatism: heuristics should depend only on what's visible at the path level, and prefer `undefined` under uncertainty.
+
+> 💡 **Decision:** Rung 3 requires a strict majority (`bestCount / total ≥ 0.5`) **and** at least two files in the winning segment. A single straggler outvoting a single feature file (1-of-2 = 50%) needs the second file to confirm the cluster is real, not coincidence.
 
 ## 3. Subject wording
 
