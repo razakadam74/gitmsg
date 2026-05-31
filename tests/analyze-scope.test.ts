@@ -110,3 +110,67 @@ describe('detectScope', () => {
     expect(detectScope(files)).toBe('auth');
   });
 });
+
+describe('detectScope rung 4 — signal-only intersection', () => {
+  it.each<{ name: string; paths: string[]; expected: string | undefined }>([
+    {
+      name: 'W19 case: src/languages cluster outvoted by tests+docs+changeset',
+      paths: [
+        'src/languages/go.ts',
+        'src/languages/index.ts',
+        'tests/languages-go.test.ts',
+        'tests/languages-index.test.ts',
+        'tests/fixtures/feat-go-handler.diff',
+        'tests/fixtures/feat-go-handler.expected.txt',
+        'docs/languages/go.md',
+        'docs/heuristics.md',
+        '.changeset/add-go-language-extractor.md',
+      ],
+      expected: 'languages',
+    },
+    {
+      name: '1 src + 3 tests -> undefined (single-signal-file guard)',
+      paths: ['src/auth/login.ts', 'tests/auth.test.ts', 'tests/foo.test.ts', 'tests/bar.test.ts'],
+      expected: undefined,
+    },
+    {
+      name: '2 src/auth + 2 src/billing + 5 tests -> undefined (no agreement between signals)',
+      paths: [
+        'src/auth/login.ts',
+        'src/auth/signup.ts',
+        'src/billing/charge.ts',
+        'src/billing/refund.ts',
+        'tests/a.test.ts',
+        'tests/b.test.ts',
+        'tests/c.test.ts',
+        'tests/d.test.ts',
+        'tests/e.test.ts',
+      ],
+      expected: undefined,
+    },
+    {
+      name: 'docs-only PR -> undefined (no signal survivors)',
+      paths: ['docs/a.md', 'docs/b.md', 'docs/c.md'],
+      expected: undefined,
+    },
+    {
+      name: 'all root-level files -> undefined (no signal survivors)',
+      paths: ['README.md', 'CONTRIBUTING.md', '.prettierignore'],
+      expected: undefined,
+    },
+    {
+      name: '.changeset alone -> undefined (noise-set pin)',
+      paths: ['.changeset/foo.md', '.changeset/bar.md'],
+      expected: undefined,
+    },
+  ])('$name', ({ paths, expected }) => {
+    const files = paths.map((p) => file(p));
+    expect(detectScope(files)).toBe(expected);
+  });
+
+  it('rung 2 fires before rung 4 on a clean 2-file shared-segment diff (precedence guard)', () => {
+    // No noise files at all -> rung 2 catches it; rung 4 would have agreed but rung 2 is stricter.
+    const files = [file('src/auth/login.ts'), file('src/auth/signup.ts')];
+    expect(detectScope(files)).toBe('auth');
+  });
+});

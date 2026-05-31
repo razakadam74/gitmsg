@@ -1,6 +1,8 @@
 import type { FileChange } from '../types.js';
 
 const SOURCE_PREFIXES = ['src/', 'lib/', 'app/', 'source/'];
+// Rung 4 (signalOnlyIntersection) depends on this list — see docs/heuristics.md §2.
+// Removing an entry will cause rung 4 to start treating those files as signal.
 const NOISE_SCOPES = new Set([
   'tests',
   'test',
@@ -10,6 +12,7 @@ const NOISE_SCOPES = new Set([
   'docs',
   'doc',
   '.github',
+  '.changeset',
 ]);
 
 const MONOREPO_ROOTS = new Set(['packages', 'apps', 'libs']);
@@ -61,6 +64,25 @@ function dominantFirstSegment(files: FileChange[]): string | undefined {
   return bestSeg;
 }
 
+function signalOnlyIntersection(files: FileChange[]): string | undefined {
+  const signal = files
+    .map((f) => stripSourcePrefix(f.path).split('/')[0] ?? '')
+    .filter((seg) => {
+      if (!seg) return false;
+      if (/\.[a-z0-9]+$/i.test(seg)) return false; // root-level file like README.md
+      const lower = seg.toLowerCase();
+      return !NOISE_SCOPES.has(lower) && !MONOREPO_ROOTS.has(lower);
+    });
+
+  if (signal.length < 2) return undefined;
+
+  const first = signal[0];
+  if (!first) return undefined;
+  if (!signal.every((s) => s === first)) return undefined;
+
+  return first;
+}
+
 export function detectScope(files: FileChange[]): string | undefined {
   if (files.length === 0) return undefined;
 
@@ -103,5 +125,14 @@ export function detectScope(files: FileChange[]): string | undefined {
     const sanitized = sanitizeScope(dominant);
     if (sanitized && sanitized.length <= 24) return sanitized;
   }
+
+  // rung 4 - signal-only intersection: drop noise files entirely; if the survivors (≥2) all share
+  // the same first segment, use it. Catches the "tests + docs + changeset outvote the real cluster" case.
+  const signalOnly = signalOnlyIntersection(files);
+  if (signalOnly) {
+    const sanitized = sanitizeScope(signalOnly);
+    if (sanitized && sanitized.length <= 24) return sanitized;
+  }
+
   return undefined;
 }
