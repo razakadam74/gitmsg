@@ -1,0 +1,12 @@
+diff --git a/src/auth/jwt.ts b/src/auth/jwt.ts
+index aaaaaaa..bbbbbbb 100644
+--- a/src/auth/jwt.ts
++++ b/src/auth/jwt.ts
+@@ -1,8 +1,8 @@
+ import { sign, verify } from 'jsonwebtoken';
+
+-export function rotateRefreshToken(token: string): string {
++export function rotate(token: string): string {
+   const decoded = verify(token, process.env.JWT_SECRET!);
+   return sign(decoded, process.env.JWT_SECRET!, { expiresIn: '7d' });
+ }

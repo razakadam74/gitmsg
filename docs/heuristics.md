@@ -130,6 +130,25 @@ In order: all-rename → `rename <old> to <new>` or `rename files`; single add �
 
 Empty diff returns `empty commit`.
 
+## 3.5 Breaking-change detection
+
+Lives in `src/analyze/breaking.ts`. Pure function — `SymbolDelta → string | undefined`. When defined, the orchestrator sets `message.breaking`, which makes `format.ts` append `!` to the header (`feat(api)!: …`) and emit a `BREAKING CHANGE:` footer.
+
+| Delta shape                                                              | Footer wording                              |
+| ------------------------------------------------------------------------ | ------------------------------------------- |
+| Exactly 1 exported symbol removed AND 1 exported symbol added, same kind | `rename exported <old> to <new>`            |
+| 1 exported symbol removed                                                | `remove exported <name>`                    |
+| 2–3 exported symbols removed                                             | `remove exported <a>, <b>[, <c>]`           |
+| ≥ 4 exported symbols removed                                             | `remove exported <a>, <b>, <c>, and N more` |
+
+> 💡 **Decision:** Only **exported** removals trigger this. Removing an internal helper is a normal refactor; removing a public symbol breaks every downstream consumer. The `exported` field is set by each language extractor per its own visibility rules (see §5).
+
+> 💡 **Decision:** The rename rung requires same `kind` so that `function foo` → `class Foo` is reported as `remove exported foo` rather than a misleading rename. Different kinds with the same name are still two distinct API breakages.
+
+> 💡 **Decision:** No similarity check on the rename rung — same reason as the subject heuristic. A 1-removed-export + 1-added-export diff is overwhelmingly a rename in practice, regardless of name similarity.
+
+> 💡 **Deferred:** Signature changes (different param count of an existing exported function) are not detected in v1 — that requires extending `CodeSymbol` with a `params` field across all language extractors. Removed CLI flags (regex scan on deleted lines, scoped to bin files) are similarly deferred; both are tracked as separate issues.
+
 ## 4. Subject formatting
 
 Lives in `src/format.ts`. Pure function — `CommitMessage → string`.

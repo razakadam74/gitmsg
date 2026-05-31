@@ -173,4 +173,18 @@ describe('detectScope rung 4 — signal-only intersection', () => {
     const files = [file('src/auth/login.ts'), file('src/auth/signup.ts')];
     expect(detectScope(files)).toBe('auth');
   });
+
+  it('does not let a noise first file prevent rung 4 from firing (regression)', () => {
+    // Real `git diff --staged` returns files alphabetically. A `.changeset/*` entry
+    // sorts first; the previous early-bail in rung 2 made the whole function return
+    // undefined before rungs 3/4 could try. Files here mirror that ordering.
+    const files = [
+      file('.changeset/foo.md', { kind: 'add' }),
+      file('docs/heuristics.md'),
+      file('src/analyze/breaking.ts', { kind: 'add' }),
+      file('src/analyze/index.ts'),
+      file('tests/analyze-breaking.test.ts', { kind: 'add' }),
+    ];
+    expect(detectScope(files)).toBe('analyze');
+  });
 });
