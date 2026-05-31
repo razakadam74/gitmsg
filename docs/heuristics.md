@@ -55,11 +55,12 @@ Covers `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `requ
 
 ## 2. Scope detection
 
-Three-rung algorithm. Returns `undefined` rather than guessing when no scope is obvious.
+Four-rung algorithm. Returns `undefined` rather than guessing when no scope is obvious.
 
 1. **Strict monorepo** — if every file matches `(packages|apps|libs)/X/…` and every match has the same `X`, the scope is `X`. Mixed packages → no scope.
 2. **Common prefix** — otherwise, strip a leading `src/`, `lib/`, `app/`, or `source/` (single pass), then take the common first path segment if every file shares it.
 3. **Dominant first segment** — if rung 2 fails because one or two files break the share (typically root-level `README.md`, `CONTRIBUTING.md`, or a stray config), take the most common first segment when it covers **≥ 50% of files AND at least 2 files**, with a single clear winner. Noise-segment names (see filter below) and monorepo roots can never _win_ rung 3, but they still **count toward the denominator** — a 2-of-4 cluster where the other 2 are in `tests/` is still 2-of-4, not 2-of-2.
+4. **Signal-only intersection** — if rung 3 also fails, drop noise files (`tests/`, `docs/`, `.github/`, `.changeset/`, monorepo-root containers) and root-level files entirely; if **2 or more** signal-bearing files survive _and_ they all share the same first segment (post-`src/` strip), that segment is the scope. This catches the case where a real cluster is outvoted by the test/doc/changeset files that ship alongside it — e.g. a new language extractor PR with 2 source files, 4 test files, 2 doc files, and a changeset.
 
 A sanitizer (`sanitizeScope`) lowercases the result, replaces non-alphanumerics with `-`, collapses runs, and trims. Output capped at 24 characters.
 
@@ -69,7 +70,7 @@ First-segment values that are never valid scopes:
 
 - `tests`, `test`, `__tests__`, `spec`, `specs`
 - `docs`, `doc`
-- `.github`
+- `.github`, `.changeset`
 - `packages`, `apps`, `libs` (only valid when followed by an inner package name)
 
 > 💡 **Decision:** Source-prefix stripping is **single-pass**. `src/lib/foo.ts` strips to `lib/foo.ts`, not `foo.ts`. If your repo literally has `src/lib/`, `lib` is probably your scope.
@@ -81,6 +82,12 @@ First-segment values that are never valid scopes:
 > 💡 **Decision:** Rung 3 counts noise files in the denominator but bars them from winning. The alternative — exclude noise entirely — would let a 1-of-1 `src/auth` + 3-of-3 `tests/` diff emit `auth`, which over-claims the scope of a mostly-test change. Path-only conservatism: heuristics should depend only on what's visible at the path level, and prefer `undefined` under uncertainty.
 
 > 💡 **Decision:** Rung 3 requires a strict majority (`bestCount / total ≥ 0.5`) **and** at least two files in the winning segment. A single straggler outvoting a single feature file (1-of-2 = 50%) needs the second file to confirm the cluster is real, not coincidence.
+
+> 💡 **Decision:** Rung 4 is more permissive than rung 3 _on which files vote_ (it drops noise entirely instead of counting it) but **equally strict on what counts as agreement** — it requires all surviving signal files to share the same first segment, not just a plurality. The `≥ 2 survivors` guard preserves rung 3's conservatism by mechanism rather than by threshold: a 1-src + N-tests diff has only one signal survivor and bails. Lowering rung 3's threshold to fix the same case was rejected because it would also let low-confidence clusters claim scope on diffs where the signal really is split.
+
+> 💡 **Decision:** `.changeset` is in the noise list because every PR in this repo ships with a changeset by recipe — it must not "count" as content for scope inference. Removing it from `NOISE_SCOPES` will cause rung 4 to stop firing on most real PRs; the `'.changeset alone -> undefined'` test row in `tests/analyze-scope.test.ts` pins this assumption.
+
+> 💡 **Decision:** "Signal" vs "noise" reflects a source-first project layout. A tests-first or docs-as-product repo would reasonably disagree with these defaults; user-configurable noise lists are deferred to the `.gitmsgrc` work (Phase 7.8).
 
 ## 3. Subject wording
 
