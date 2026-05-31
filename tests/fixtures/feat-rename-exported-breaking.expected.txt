@@ -1,0 +1,3 @@
+refactor(auth)!: rename rotateRefreshToken to rotate
+
+BREAKING CHANGE: rename exported rotateRefreshToken to rotate

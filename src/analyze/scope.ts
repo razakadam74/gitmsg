@@ -106,17 +106,19 @@ export function detectScope(files: FileChange[]): string | undefined {
   const firstSeg = segments[0]?.[0];
 
   if (!firstSeg) return undefined;
-  const lower = firstSeg.toLowerCase();
-  if (NOISE_SCOPES.has(lower) || MONOREPO_ROOTS.has(lower)) return undefined;
 
   // rung 2 - all share the same first segment (and it's not a file with extension)
   const allShare =
     segments.every((s) => s.length > 1 && s[0] === firstSeg) && !/\.[a-z0-9]+$/i.test(firstSeg);
 
   if (allShare) {
-    const sanitized = sanitizeScope(firstSeg);
-    if (sanitized && sanitized.length <= 24) return sanitized;
-    return undefined;
+    const lower = firstSeg.toLowerCase();
+    // Noise / monorepo-root segments can't be a scope; fall through to rungs 3/4
+    // instead of returning undefined so they still get to try.
+    if (!NOISE_SCOPES.has(lower) && !MONOREPO_ROOTS.has(lower)) {
+      const sanitized = sanitizeScope(firstSeg);
+      if (sanitized && sanitized.length <= 24) return sanitized;
+    }
   }
 
   // rung 3 - find the most common first segment among the files (ignoring noise segments and root-level files)
