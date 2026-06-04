@@ -153,3 +153,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Demo videos
+docs/demo.mp4
