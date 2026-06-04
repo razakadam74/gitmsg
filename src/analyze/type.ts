@@ -60,10 +60,7 @@ function looksLikeFix(files: FileChange[]): boolean {
 export function detectType(files: FileChange[]): CommitType {
   if (files.length === 0) return 'chore';
 
-  // Filter out neutral config files (`.gitignore`, `.editorconfig`, etc.) before
-  // category voting. They don't carry intent on their own, but their presence
-  // would otherwise break the every-file-matches checks below. If only neutrals
-  // remain, the change is pure tooling housekeeping.
+  // Filter out neutral config files (`.gitignore`, `.editorconfig`, etc.)
   const signal = files.filter((f) => !NEUTRAL_PATTERN.test(f.path));
   if (signal.length === 0) return 'chore';
 

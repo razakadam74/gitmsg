@@ -11,10 +11,6 @@ export const DEPS_PATTERN =
  * Files that carry no category signal of their own. They should be filtered out
  * of type-classification voting so a single `.gitignore` tweak doesn't drag a
  * docs-only or src-only commit into the line-balance fallback.
- *
- * Anchored with `(^|\/)…$` so we match real config files at the repo root or
- * inside a directory, not files that happen to contain the name as a substring
- * (`my.gitignore.template`).
  */
 export const NEUTRAL_PATTERN =
   /(^|\/)(\.gitignore|\.gitattributes|\.editorconfig|\.npmignore|\.prettierignore|\.prettierrc(\.[a-z0-9]+)?)$/;
