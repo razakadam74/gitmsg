@@ -1,5 +1,5 @@
 import type { CommitType, FileChange } from '../types.js';
-import { DEPS_PATTERN } from './patterns.js';
+import { DEPS_PATTERN, NEUTRAL_PATTERN } from './patterns.js';
 
 const TEST_PATTERN = /(^|\/)(__tests__|tests?|spec)\/|\.(test|spec)\.[a-z0-9]+$/i;
 
@@ -60,18 +60,25 @@ function looksLikeFix(files: FileChange[]): boolean {
 export function detectType(files: FileChange[]): CommitType {
   if (files.length === 0) return 'chore';
 
-  if (every(files, (f) => fileMatches(f, TEST_PATTERN))) return 'test';
-  if (every(files, (f) => fileMatches(f, DOC_PATTERN) || fileMatches(f, MARKDOWN_PATTERN)))
+  // Filter out neutral config files (`.gitignore`, `.editorconfig`, etc.) before
+  // category voting. They don't carry intent on their own, but their presence
+  // would otherwise break the every-file-matches checks below. If only neutrals
+  // remain, the change is pure tooling housekeeping.
+  const signal = files.filter((f) => !NEUTRAL_PATTERN.test(f.path));
+  if (signal.length === 0) return 'chore';
+
+  if (every(signal, (f) => fileMatches(f, TEST_PATTERN))) return 'test';
+  if (every(signal, (f) => fileMatches(f, DOC_PATTERN) || fileMatches(f, MARKDOWN_PATTERN)))
     return 'docs';
 
-  if (every(files, (f) => fileMatches(f, CI_PATTERN))) return 'ci';
-  if (every(files, (f) => fileMatches(f, DEPS_PATTERN))) return 'chore';
-  if (every(files, (f) => fileMatches(f, BUILD_PATTERN))) return 'build';
+  if (every(signal, (f) => fileMatches(f, CI_PATTERN))) return 'ci';
+  if (every(signal, (f) => fileMatches(f, DEPS_PATTERN))) return 'chore';
+  if (every(signal, (f) => fileMatches(f, BUILD_PATTERN))) return 'build';
 
-  if (every(files, (f) => f.kind === 'rename' && isWhitespaceOnly(f))) return 'refactor';
-  if (every(files, isWhitespaceOnly)) return 'style';
+  if (every(signal, (f) => f.kind === 'rename' && isWhitespaceOnly(f))) return 'refactor';
+  if (every(signal, isWhitespaceOnly)) return 'style';
 
-  const hasNewSourceFile = files.some(
+  const hasNewSourceFile = signal.some(
     (f) =>
       f.kind === 'add' &&
       !TEST_PATTERN.test(f.path) &&
@@ -81,13 +88,13 @@ export function detectType(files: FileChange[]): CommitType {
       !DEPS_PATTERN.test(f.path),
   );
 
-  if (looksLikeFix(files)) return 'fix';
+  if (looksLikeFix(signal)) return 'fix';
   if (hasNewSourceFile) return 'feat';
 
   // Modify-only with no new files and no fix signals — most often a refactor or feat-extension.
   // Default to 'feat' if there are added lines, 'refactor' if balanced.
-  const added = files.reduce((n, f) => n + f.addedLines.length, 0);
-  const removed = files.reduce((n, f) => n + f.removedLines.length, 0);
+  const added = signal.reduce((n, f) => n + f.addedLines.length, 0);
+  const removed = signal.reduce((n, f) => n + f.removedLines.length, 0);
 
   if (added > removed * 1.5) return 'feat';
   if (removed > added * 1.5) return 'refactor';
