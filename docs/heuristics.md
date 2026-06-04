@@ -10,19 +10,19 @@ An 11-rung ladder. First match wins; precedence encodes specificity.
 
 Before the ladder runs, files matching `NEUTRAL_PATTERN` (`.gitignore`, `.gitattributes`, `.editorconfig`, `.prettierignore`, `.prettierrc*`, `.npmignore`) are filtered out. They carry no category intent of their own and would otherwise veto every-file checks (a single `.gitignore` tweak alongside a docs-only diff used to fall through to `feat`). If the entire diff is neutrals, the type is `chore`.
 
-| Rung | Condition                                                                   | Type                   |
-| ---- | --------------------------------------------------------------------------- | ---------------------- |
-| 1    | No files in diff, or only neutral files                                     | `chore`                |
-| 2    | Every signal file matches `TEST_PATTERN`                                    | `test`                 |
-| 3    | Every signal file matches `DOC_PATTERN` or `MARKDOWN_PATTERN`               | `docs`                 |
-| 4    | Every signal file matches `CI_PATTERN`                                      | `ci`                   |
-| 5    | Every signal file matches `DEPS_PATTERN`                                    | `chore` (scope `deps`) |
-| 6    | Every signal file matches `BUILD_PATTERN`                                   | `build`                |
-| 7    | Every signal file is a rename with no content change                        | `refactor`             |
-| 8    | Every signal file is whitespace-only                                        | `style`                |
-| 9    | A comment-line edit on an existing signal file contains a fix-shaped keyword| `fix`                  |
-| 10   | Any new source file present in the signal set                               | `feat`                 |
-| 11   | Added lines > removed × 1.5 → `feat`; reverse → `refactor`; else `refactor` | (default)              |
+| Rung | Condition                                                                    | Type                   |
+| ---- | ---------------------------------------------------------------------------- | ---------------------- |
+| 1    | No files in diff, or only neutral files                                      | `chore`                |
+| 2    | Every signal file matches `TEST_PATTERN`                                     | `test`                 |
+| 3    | Every signal file matches `DOC_PATTERN` or `MARKDOWN_PATTERN`                | `docs`                 |
+| 4    | Every signal file matches `CI_PATTERN`                                       | `ci`                   |
+| 5    | Every signal file matches `DEPS_PATTERN`                                     | `chore` (scope `deps`) |
+| 6    | Every signal file matches `BUILD_PATTERN`                                    | `build`                |
+| 7    | Every signal file is a rename with no content change                         | `refactor`             |
+| 8    | Every signal file is whitespace-only                                         | `style`                |
+| 9    | A comment-line edit on an existing signal file contains a fix-shaped keyword | `fix`                  |
+| 10   | Any new source file present in the signal set                                | `feat`                 |
+| 11   | Added lines > removed × 1.5 → `feat`; reverse → `refactor`; else `refactor`  | (default)              |
 
 ### Path patterns
 
@@ -48,7 +48,7 @@ Lives in `src/analyze/type.ts`. Patterns are regex tests against the file path.
 
 > 💡 **Decision:** The `*1.5` margin on rung 11 is a confidence threshold. A diff with 101 additions and 100 removals shouldn't flap between `feat` and `refactor` — neither side has earned the verdict.
 
-> 💡 **Decision:** Neutral config files are *filtered before voting*, not classified as their own type. A `.gitignore` tweak shipped alongside docs is still a docs commit; a `.gitignore` tweak shipped alongside src is still a feat. Only when the *entire* diff is neutral does the type become `chore`. Mirror of `scope.ts` rung 4: drop noise, classify on what's left.
+> 💡 **Decision:** Neutral config files are _filtered before voting_, not classified as their own type. A `.gitignore` tweak shipped alongside docs is still a docs commit; a `.gitignore` tweak shipped alongside src is still a feat. Only when the _entire_ diff is neutral does the type become `chore`. Mirror of `scope.ts` rung 4: drop noise, classify on what's left.
 
 ### Sidebar: dependency-file detection
 
