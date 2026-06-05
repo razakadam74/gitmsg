@@ -1,0 +1,23 @@
+diff --git a/.gitignore b/.gitignore
+index 1111111..2222222 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -5,0 +6,1 @@ node_modules/
++docs/demo.mp4
+diff --git a/docs/demo.gif b/docs/demo.gif
+index 3333333..4444444 100644
+Binary files a/docs/demo.gif and b/docs/demo.gif differ
+diff --git a/docs/demo.tape b/docs/demo.tape
+index 5555555..6666666 100644
+--- a/docs/demo.tape
++++ b/docs/demo.tape
+@@ -10,2 +10,3 @@
+ Output docs/demo.gif
++Output docs/demo.mp4
+ 
+@@ -20,1 +21,4 @@ Set TypingSpeed 55ms
+-Set TypingSpeed 55ms
++Set TypingSpeed 50ms
++# Scene 2 — Python breaking change
++Hide
++Show

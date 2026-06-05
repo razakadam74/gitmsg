@@ -64,6 +64,44 @@ describe('detectType', () => {
       ],
       expected: 'refactor',
     },
+    {
+      name: 'docs + .gitignore -> docs (neutral filtered)',
+      files: [file('.gitignore'), file('docs/demo.gif'), file('docs/demo.tape')],
+      expected: 'docs',
+    },
+    {
+      name: 'new source + .gitignore -> feat (neutral filtered)',
+      files: [
+        file('.gitignore'),
+        file('src/payments.ts', { kind: 'add', addedLines: ['export const x = 1;'] }),
+      ],
+      expected: 'feat',
+    },
+    {
+      name: 'only .gitignore -> chore',
+      files: [file('.gitignore', { addedLines: ['dist/'] })],
+      expected: 'chore',
+    },
+    {
+      name: 'only .editorconfig -> chore',
+      files: [file('.editorconfig')],
+      expected: 'chore',
+    },
+    {
+      name: 'multiple neutrals only -> chore',
+      files: [
+        file('.gitignore'),
+        file('.editorconfig'),
+        file('.prettierrc.json'),
+        file('packages/ui/.npmignore'),
+      ],
+      expected: 'chore',
+    },
+    {
+      name: 'CI files + .gitignore -> ci (neutral filtered)',
+      files: [file('.github/workflows/ci.yml'), file('.gitignore')],
+      expected: 'ci',
+    },
   ])('$name', ({ files, expected }) => {
     expect(detectType(files)).toBe(expected);
   });
