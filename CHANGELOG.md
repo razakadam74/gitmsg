@@ -1,5 +1,11 @@
 # @razakadam74/gitmsg
 
+## 0.5.1
+
+### Patch Changes
+
+- e8c7ae5: Filter neutral config files (`.gitignore`, `.editorconfig`, `.prettierrc*`, etc.) before type classification so a single `.gitignore` tweak doesn't drag a docs- or src-only commit into the `feat: refactor module` fallback. If the entire diff is neutrals, the type is `chore`. Closes #64.
+
 ## 0.5.0
 
 ### Minor Changes
