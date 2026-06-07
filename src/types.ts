@@ -20,11 +20,19 @@ export interface CodeSymbol {
   kind: SymbolKind;
   name: string;
   exported: boolean;
+  // Raw between parens substring for callable kinds eg function, C# delegate)
+  params?: string;
+}
+
+export interface ModifiedSymbol {
+  from: CodeSymbol;
+  to: CodeSymbol;
 }
 
 export interface SymbolDelta {
   added: CodeSymbol[];
   removed: CodeSymbol[];
+  modified: ModifiedSymbol[];
 }
 
 export type CommitType =

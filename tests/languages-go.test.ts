@@ -18,22 +18,22 @@ describe('goExtractor', () => {
       {
         name: 'exported function',
         line: 'func ProcessOrder(o Order) error {',
-        expected: { kind: 'function', name: 'ProcessOrder', exported: true },
+        expected: { kind: 'function', name: 'ProcessOrder', exported: true, params: 'o Order' },
       },
       {
         name: 'unexported function',
         line: 'func parseToken(s string) (*Token, error) {',
-        expected: { kind: 'function', name: 'parseToken', exported: false },
+        expected: { kind: 'function', name: 'parseToken', exported: false, params: 's string' },
       },
       {
         name: 'generic function',
         line: 'func Map[T, U any](in []T, fn func(T) U) []U {',
-        expected: { kind: 'function', name: 'Map', exported: true },
+        expected: { kind: 'function', name: 'Map', exported: true, params: 'in []T, fn func(T' },
       },
       {
         name: 'no-arg function',
         line: 'func init() {',
-        expected: { kind: 'function', name: 'init', exported: false },
+        expected: { kind: 'function', name: 'init', exported: false, params: '' },
       },
       // type rows (struct, interface, alias, named)
       {
@@ -104,14 +104,14 @@ describe('goExtractor', () => {
     it('dedupes identical symbols within one call', () => {
       const lines = ['func Foo() {', 'func Foo() {'];
       expect(goExtractor.extract(lines)).toEqual([
-        { kind: 'function', name: 'Foo', exported: true },
+        { kind: 'function', name: 'Foo', exported: true, params: '' },
       ]);
     });
 
     it('preserves declaration order across lines', () => {
       expect(goExtractor.extract(['type A struct {', 'func B() {', 'const C = 1'])).toEqual([
         { kind: 'class', name: 'A', exported: true },
-        { kind: 'function', name: 'B', exported: true },
+        { kind: 'function', name: 'B', exported: true, params: '' },
         { kind: 'const', name: 'C', exported: true },
       ]);
     });
@@ -126,6 +126,38 @@ describe('goExtractor', () => {
       expect(goExtractor.extract(['type Foo interface {'])).toEqual([
         { kind: 'interface', name: 'Foo', exported: true },
       ]);
+    });
+
+    describe('params capture', () => {
+      it('captures multi-arg signature verbatim', () => {
+        expect(goExtractor.extract(['func Rotate(token string, ttl int) error {'])).toEqual([
+          {
+            kind: 'function',
+            name: 'Rotate',
+            exported: true,
+            params: 'token string, ttl int',
+          },
+        ]);
+      });
+
+      it('captures empty params as empty string', () => {
+        expect(goExtractor.extract(['func Init() {'])).toEqual([
+          { kind: 'function', name: 'Init', exported: true, params: '' },
+        ]);
+      });
+
+      it('does not set params on type/struct/interface/const rows', () => {
+        const lines = [
+          'type Foo struct {',
+          'type Bar interface {',
+          'type Baz = string',
+          'const Qux = 1',
+        ];
+        const result = goExtractor.extract(lines);
+        for (const sym of result) {
+          expect(sym.params).toBeUndefined();
+        }
+      });
     });
   });
 });

@@ -65,17 +65,17 @@ describe('csExtractor', () => {
       {
         name: 'public delegate (simple return)',
         line: 'public delegate int Handler(string s);',
-        expected: { kind: 'type', name: 'Handler', exported: true },
+        expected: { kind: 'type', name: 'Handler', exported: true, params: 'string s' },
       },
       {
         name: 'public delegate (generic return type)',
         line: 'public delegate Task<List<Foo>> AsyncProcessor(int id);',
-        expected: { kind: 'type', name: 'AsyncProcessor', exported: true },
+        expected: { kind: 'type', name: 'AsyncProcessor', exported: true, params: 'int id' },
       },
       {
         name: 'public generic delegate',
         line: 'public delegate T Mapper<T, U>(U input);',
-        expected: { kind: 'type', name: 'Mapper', exported: true },
+        expected: { kind: 'type', name: 'Mapper', exported: true, params: 'U input' },
       },
     ])('extracts $name', ({ line, expected }) => {
       expect(csExtractor.extract([line])).toEqual([expected]);
@@ -110,6 +110,34 @@ describe('csExtractor', () => {
         { kind: 'class', name: 'Outer', exported: true },
         { kind: 'class', name: 'Inner', exported: true },
       ]);
+    });
+
+    describe('params capture', () => {
+      it('captures delegate params verbatim', () => {
+        expect(csExtractor.extract(['public delegate int Handler(string s, int n);'])).toEqual([
+          { kind: 'type', name: 'Handler', exported: true, params: 'string s, int n' },
+        ]);
+      });
+
+      it('captures empty delegate params as empty string', () => {
+        expect(csExtractor.extract(['public delegate void Trigger();'])).toEqual([
+          { kind: 'type', name: 'Trigger', exported: true, params: '' },
+        ]);
+      });
+
+      it('does not set params on class/interface/enum/record/struct', () => {
+        const lines = [
+          'public class Foo {',
+          'public interface IBar {',
+          'public enum Status {',
+          'public record Dto(int Id, string Name);',
+          'public struct Point {',
+        ];
+        const result = csExtractor.extract(lines);
+        for (const sym of result) {
+          expect(sym.params).toBeUndefined();
+        }
+      });
     });
   });
 });

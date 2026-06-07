@@ -19,7 +19,7 @@ const sym = (name: string, kind: SymbolKind = 'function', exported = true): Code
 const subject = (overrides: Partial<SubjectInput> = {}): SubjectInput => ({
   type: 'feat',
   files: [file()],
-  symbols: { added: [], removed: [] },
+  symbols: { added: [], removed: [], modified: [] },
   ...overrides,
 });
 
@@ -172,7 +172,10 @@ describe('detectSubject — symbol-driven (feat/fix/refactor/perf)', () => {
     (type) => {
       expect(
         detectSubject(
-          subject({ type, symbols: { added: [sym('rotateRefreshToken')], removed: [] } }),
+          subject({
+            type,
+            symbols: { added: [sym('rotateRefreshToken')], removed: [], modified: [] },
+          }),
         ),
       ).toBe('add rotateRefreshToken');
     },
@@ -180,7 +183,9 @@ describe('detectSubject — symbol-driven (feat/fix/refactor/perf)', () => {
 
   it('single remove returns "remove NAME"', () => {
     expect(
-      detectSubject(subject({ symbols: { added: [], removed: [sym('parseLegacyToken')] } })),
+      detectSubject(
+        subject({ symbols: { added: [], removed: [sym('parseLegacyToken')], modified: [] } }),
+      ),
     ).toBe('remove parseLegacyToken');
   });
 
@@ -188,7 +193,7 @@ describe('detectSubject — symbol-driven (feat/fix/refactor/perf)', () => {
     expect(
       detectSubject(
         subject({
-          symbols: { added: [sym('parseToken')], removed: [sym('parseLegacyToken')] },
+          symbols: { added: [sym('parseToken')], removed: [sym('parseLegacyToken')], modified: [] },
         }),
       ),
     ).toBe('rename parseLegacyToken to parseToken');
@@ -197,7 +202,9 @@ describe('detectSubject — symbol-driven (feat/fix/refactor/perf)', () => {
   it('1 add + 1 remove with unrelated names is still a rename', () => {
     expect(
       detectSubject(
-        subject({ symbols: { added: [sym('BarService')], removed: [sym('OldFooManager')] } }),
+        subject({
+          symbols: { added: [sym('BarService')], removed: [sym('OldFooManager')], modified: [] },
+        }),
       ),
     ).toBe('rename OldFooManager to BarService');
   });
@@ -209,6 +216,7 @@ describe('detectSubject — symbol-driven (feat/fix/refactor/perf)', () => {
           symbols: {
             added: [sym('parseToken'), sym('rotateRefreshToken'), sym('Token', 'interface')],
             removed: [],
+            modified: [],
           },
         }),
       ),

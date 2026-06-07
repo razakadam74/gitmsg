@@ -1,0 +1,3 @@
+refactor(auth)!: update jwt
+
+BREAKING CHANGE: signature of exported rotateRefreshToken changed

@@ -15,22 +15,22 @@ describe('pyExtractor', () => {
       {
         name: 'def',
         line: 'def foo():',
-        expected: { kind: 'function', name: 'foo', exported: true },
+        expected: { kind: 'function', name: 'foo', exported: true, params: '' },
       },
       {
         name: 'async def',
         line: 'async def fetch():',
-        expected: { kind: 'function', name: 'fetch', exported: true },
+        expected: { kind: 'function', name: 'fetch', exported: true, params: '' },
       },
       {
         name: 'private def',
         line: 'def _helper():',
-        expected: { kind: 'function', name: '_helper', exported: false },
+        expected: { kind: 'function', name: '_helper', exported: false, params: '' },
       },
       {
         name: 'dunder def',
         line: 'def __init__(self):',
-        expected: { kind: 'function', name: '__init__', exported: false },
+        expected: { kind: 'function', name: '__init__', exported: false, params: 'self' },
       },
       {
         name: 'class',
@@ -76,7 +76,7 @@ describe('pyExtractor', () => {
     it('dedupes identical symbols within one call', () => {
       const lines = ['def foo():', 'def foo():'];
       expect(pyExtractor.extract(lines)).toEqual([
-        { kind: 'function', name: 'foo', exported: true },
+        { kind: 'function', name: 'foo', exported: true, params: '' },
       ]);
     });
 
@@ -91,6 +91,33 @@ describe('pyExtractor', () => {
       expect(pyExtractor.extract(['@dataclass', 'class Point:'])).toEqual([
         { kind: 'class', name: 'Point', exported: true },
       ]);
+    });
+
+    describe('params capture', () => {
+      it('captures multi-arg signature verbatim', () => {
+        expect(pyExtractor.extract(['def rotate(token: str, ttl: int) -> str:'])).toEqual([
+          {
+            kind: 'function',
+            name: 'rotate',
+            exported: true,
+            params: 'token: str, ttl: int',
+          },
+        ]);
+      });
+
+      it('captures empty params as empty string', () => {
+        expect(pyExtractor.extract(['def noop():'])).toEqual([
+          { kind: 'function', name: 'noop', exported: true, params: '' },
+        ]);
+      });
+
+      it('does not set params on class/UPPER_SNAKE rows', () => {
+        const lines = ['class Widget:', 'MAX_RETRIES = 3'];
+        const result = pyExtractor.extract(lines);
+        for (const sym of result) {
+          expect(sym.params).toBeUndefined();
+        }
+      });
     });
   });
 });
