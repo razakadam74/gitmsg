@@ -1,7 +1,7 @@
 import type { CodeSymbol, LanguageExtractor } from '../types.js';
 
-const PATTERNS: Array<{ re: RegExp; kind: CodeSymbol['kind'] }> = [
-  { re: /^func\s+(\w+)(?:\[[^\]]*\])?\s*\(/, kind: 'function' },
+const PATTERNS: Array<{ re: RegExp; kind: CodeSymbol['kind']; callable?: boolean }> = [
+  { re: /^func\s+(\w+)(?:\[[^\]]*\])?\s*\(/, kind: 'function', callable: true },
   { re: /^type\s+(\w+)(?:\[[^\]]*\])?\s+struct\b/, kind: 'class' },
   { re: /^type\s+(\w+)(?:\[[^\]]*\])?\s+interface\b/, kind: 'interface' },
   { re: /^type\s+(\w+)(?:\[[^\]]*\])?\s/, kind: 'type' },
@@ -17,7 +17,7 @@ export const goExtractor: LanguageExtractor = {
     const seen = new Set<string>();
 
     for (const line of lines) {
-      for (const { re, kind } of PATTERNS) {
+      for (const { re, kind, callable } of PATTERNS) {
         const m = re.exec(line);
         if (m && m[1]) {
           const name = m[1];
@@ -25,7 +25,12 @@ export const goExtractor: LanguageExtractor = {
           const key = `${kind}:${name}:${exported}`;
           if (!seen.has(key)) {
             seen.add(key);
-            symbols.push({ kind, name, exported });
+            const sym: CodeSymbol = { kind, name, exported };
+            if (callable) {
+              const p = /\(([^)]*)\)/.exec(line);
+              if (p) sym.params = p[1] ?? '';
+            }
+            symbols.push(sym);
           }
           break;
         }

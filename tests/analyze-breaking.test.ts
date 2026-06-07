@@ -1,13 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { detectBreaking } from '../src/analyze/breaking.js';
-import type { CodeSymbol, SymbolDelta } from '../src/types.js';
+import type { CodeSymbol, ModifiedSymbol, SymbolDelta } from '../src/types.js';
 
 function sym(name: string, partial: Partial<CodeSymbol> = {}): CodeSymbol {
   return { kind: 'function', name, exported: true, ...partial };
 }
 
-function delta(added: CodeSymbol[] = [], removed: CodeSymbol[] = []): SymbolDelta {
-  return { added, removed };
+function mod(
+  name: string,
+  fromParams: string,
+  toParams: string,
+  partial: Partial<CodeSymbol> = {},
+): ModifiedSymbol {
+  return {
+    from: { kind: 'function', name, exported: true, params: fromParams, ...partial },
+    to: { kind: 'function', name, exported: true, params: toParams, ...partial },
+  };
+}
+
+function delta(
+  added: CodeSymbol[] = [],
+  removed: CodeSymbol[] = [],
+  modified: ModifiedSymbol[] = [],
+): SymbolDelta {
+  return { added, removed, modified };
 }
 
 describe('detectBreaking', () => {
@@ -73,5 +89,78 @@ describe('detectBreaking', () => {
     expect(detectBreaking(delta([sym('a'), sym('b')], [sym('c'), sym('d')]))).toBe(
       'remove exported c, d',
     );
+  });
+
+  describe('signature changes (rule 3)', () => {
+    it('flags a single signature change on an exported function', () => {
+      expect(
+        detectBreaking(
+          delta([], [], [mod('rotate', 'token: string', 'token: string, ttl: number')]),
+        ),
+      ).toBe('signature of exported rotate changed');
+    });
+
+    it('ignores signature changes on non-exported functions', () => {
+      const m = mod('helper', 'a: string', 'a: string, b: number', { exported: false });
+      expect(detectBreaking(delta([], [], [m]))).toBeUndefined();
+    });
+
+    it('requires both sides to be exported', () => {
+      const m: ModifiedSymbol = {
+        from: { kind: 'function', name: 'foo', exported: false, params: 'a' },
+        to: { kind: 'function', name: 'foo', exported: true, params: 'a, b' },
+      };
+      expect(detectBreaking(delta([], [], [m]))).toBeUndefined();
+    });
+
+    it('lists 2 signature changes comma-separated', () => {
+      expect(detectBreaking(delta([], [], [mod('a', 'x', 'x, y'), mod('b', 'p', 'p, q')]))).toBe(
+        'signature of exported a, b changed',
+      );
+    });
+
+    it('lists 3 signature changes comma-separated', () => {
+      expect(
+        detectBreaking(
+          delta([], [], [mod('a', 'x', 'x, y'), mod('b', 'p', 'p, q'), mod('c', 'm', 'm, n')]),
+        ),
+      ).toBe('signature of exported a, b, c changed');
+    });
+
+    it('summarizes 4+ signature changes with "and N more"', () => {
+      expect(
+        detectBreaking(
+          delta(
+            [],
+            [],
+            [
+              mod('a', 'x', 'x, y'),
+              mod('b', 'p', 'p, q'),
+              mod('c', 'm', 'm, n'),
+              mod('d', 's', 's, t'),
+              mod('e', 'u', 'u, v'),
+            ],
+          ),
+        ),
+      ).toBe('signature of exported a, b, c, and 2 more changed');
+    });
+
+    it('rule 1 (removal) takes precedence over rule 3 (signature) when both apply', () => {
+      expect(detectBreaking(delta([], [sym('gone')], [mod('changed', 'x', 'x, y')]))).toBe(
+        'remove exported gone',
+      );
+    });
+
+    it('returns undefined when modified bucket is empty and nothing was removed', () => {
+      expect(detectBreaking(delta([sym('foo')], [], []))).toBeUndefined();
+    });
+
+    it('skips non-exported sig changes but still flags exported ones in same delta', () => {
+      const exportedChange = mod('publicFn', 'a', 'a, b');
+      const internalChange = mod('helper', 'x', 'x, y', { exported: false });
+      expect(detectBreaking(delta([], [], [internalChange, exportedChange]))).toBe(
+        'signature of exported publicFn changed',
+      );
+    });
   });
 });

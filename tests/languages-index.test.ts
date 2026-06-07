@@ -69,7 +69,7 @@ describe('extractorFor', () => {
 
 describe('symbolDelta', () => {
   it('returns empty delta for empty input', () => {
-    expect(symbolDelta([])).toEqual({ added: [], removed: [] });
+    expect(symbolDelta([])).toEqual({ added: [], removed: [], modified: [] });
   });
 
   it('skips files with no extractor', () => {
@@ -77,7 +77,7 @@ describe('symbolDelta', () => {
       path: 'image.png',
       addedLines: ['export function foo() {}'], // would extract if ts, but png is skipped
     });
-    expect(symbolDelta([f])).toEqual({ added: [], removed: [] });
+    expect(symbolDelta([f])).toEqual({ added: [], removed: [], modified: [] });
   });
 
   it('reports a pure addition', () => {
@@ -86,8 +86,9 @@ describe('symbolDelta', () => {
       addedLines: ['export function rotateRefreshToken() {}'],
     });
     expect(symbolDelta([f])).toEqual({
-      added: [{ kind: 'function', name: 'rotateRefreshToken', exported: true }],
+      added: [{ kind: 'function', name: 'rotateRefreshToken', exported: true, params: '' }],
       removed: [],
+      modified: [],
     });
   });
 
@@ -98,24 +99,57 @@ describe('symbolDelta', () => {
     });
     expect(symbolDelta([f])).toEqual({
       added: [],
-      removed: [{ kind: 'function', name: 'parseLegacyToken', exported: true }],
+      removed: [
+        { kind: 'function', name: 'parseLegacyToken', exported: true, params: 's: string' },
+      ],
+      modified: [],
     });
   });
 
-  it('cancels a symbol that appears on both sides (modification)', () => {
+  it('cancels a symbol whose params match (no false modified)', () => {
     const f = file({
-      addedLines: ['export function rotate(refreshToken: string) {}'],
+      addedLines: ['export function rotate(token: string) {}', '  // body'],
+      removedLines: ['export function rotate(token: string) {}', '  // body'],
+    });
+    expect(symbolDelta([f])).toEqual({ added: [], removed: [], modified: [] });
+  });
+
+  it('reports a signature change as modified, not added/removed', () => {
+    const f = file({
+      addedLines: ['export function rotate(token: string, ttl: number) {}'],
       removedLines: ['export function rotate(token: string) {}'],
     });
-    expect(symbolDelta([f])).toEqual({ added: [], removed: [] });
+    expect(symbolDelta([f])).toEqual({
+      added: [],
+      removed: [],
+      modified: [
+        {
+          from: { kind: 'function', name: 'rotate', exported: true, params: 'token: string' },
+          to: {
+            kind: 'function',
+            name: 'rotate',
+            exported: true,
+            params: 'token: string, ttl: number',
+          },
+        },
+      ],
+    });
   });
 
-  it('cancels across exported flip (private → public is a modification)', () => {
+  it('cancels across exported flip (private → public is a modification, not added/removed)', () => {
     const f = file({
       addedLines: ['export function foo() {}'],
       removedLines: ['function foo() {}'],
     });
-    expect(symbolDelta([f])).toEqual({ added: [], removed: [] });
+    expect(symbolDelta([f])).toEqual({ added: [], removed: [], modified: [] });
+  });
+
+  it('does not put non-callable kinds in modified (no params on either side → cancel)', () => {
+    const f = file({
+      addedLines: ['export class Widget {}'],
+      removedLines: ['export class Widget {}'],
+    });
+    expect(symbolDelta([f])).toEqual({ added: [], removed: [], modified: [] });
   });
 
   it('aggregates across multiple files', () => {
@@ -124,7 +158,26 @@ describe('symbolDelta', () => {
     expect(symbolDelta([a, b])).toEqual({
       added: [{ kind: 'class', name: 'A', exported: true }],
       removed: [{ kind: 'class', name: 'B', exported: true }],
+      modified: [],
     });
+  });
+
+  it('aggregates modifications across multiple files', () => {
+    const a = file({
+      path: 'src/a.ts',
+      addedLines: ['export function alpha(x: string, y: number) {}'],
+      removedLines: ['export function alpha(x: string) {}'],
+    });
+    const b = file({
+      path: 'src/b.ts',
+      addedLines: ['export function beta(p: T) {}'],
+      removedLines: ['export function beta() {}'],
+    });
+    const result = symbolDelta([a, b]);
+    expect(result.added).toEqual([]);
+    expect(result.removed).toEqual([]);
+    expect(result.modified).toHaveLength(2);
+    expect(result.modified.map((m) => m.to.name)).toEqual(['alpha', 'beta']);
   });
 
   it('preserves duplicates across files (no cross-file dedup)', () => {
