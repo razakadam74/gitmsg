@@ -1,5 +1,11 @@
 # @razakadam74/gitmsg
 
+## 0.6.0
+
+### Minor Changes
+
+- bb95e00: Detect signature changes of exported functions as breaking changes. Closes #61
+
 ## 0.5.1
 
 ### Patch Changes
