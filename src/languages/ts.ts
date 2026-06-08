@@ -1,4 +1,5 @@
 import type { CodeSymbol, LanguageExtractor } from '../types.js';
+import { runPatterns } from './runner.js';
 
 const PATTERNS: Array<{
   re: RegExp;
@@ -30,27 +31,7 @@ export const tsExtractor: LanguageExtractor = {
   matches(path: string): boolean {
     return /\.(tsx?|jsx?|mjs|cjs)$/.test(path);
   },
-  extract(lines: string[]): CodeSymbol[] {
-    const symbols: CodeSymbol[] = [];
-    const seen = new Set<string>();
-    for (const line of lines) {
-      for (const { re, kind, exported, callable } of PATTERNS) {
-        const m = re.exec(line);
-        if (m && m[1]) {
-          const key = `${kind}:${m[1]}:${exported}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            const sym: CodeSymbol = { kind, name: m[1], exported };
-            if (callable) {
-              const p = /\(([^)]*)\)/.exec(line);
-              if (p) sym.params = p[1] ?? '';
-            }
-            symbols.push(sym);
-          }
-          break;
-        }
-      }
-    }
-    return symbols;
+  extract(lines: string[]) {
+    return runPatterns(lines, PATTERNS, () => false);
   },
 };

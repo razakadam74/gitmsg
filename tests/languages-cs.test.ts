@@ -43,6 +43,16 @@ describe('csExtractor', () => {
         expected: { kind: 'interface', name: 'IOrderService', exported: true },
       },
       {
+        name: 'internal interface',
+        line: 'internal interface IHelper {',
+        expected: { kind: 'interface', name: 'IHelper', exported: false },
+      },
+      {
+        name: 'no-modifier interface (defaults to internal)',
+        line: 'interface IAnonymous {',
+        expected: { kind: 'interface', name: 'IAnonymous', exported: false },
+      },
+      {
         name: 'public struct',
         line: 'public struct Point {',
         expected: { kind: 'class', name: 'Point', exported: true },
