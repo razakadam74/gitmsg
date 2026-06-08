@@ -1,0 +1,28 @@
+diff --git a/src/api/OrderHandler.java b/src/api/OrderHandler.java
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/api/OrderHandler.java
+@@ -0,0 +1,11 @@
++package com.acme.api;
++
++public class OrderHandler {
++    public OrderHandler() { }
++
++    public int process(Order o) {
++        return o.id;
++    }
++}
++
++
+diff --git a/src/api/OrderProcessor.java b/src/api/OrderProcessor.java
+new file mode 100644
+index 0000000..2222222
+--- /dev/null
++++ b/src/api/OrderProcessor.java
+@@ -0,0 +1,5 @@
++package com.acme.api;
++
++public interface OrderProcessor {
++    int process(Order o);
++}

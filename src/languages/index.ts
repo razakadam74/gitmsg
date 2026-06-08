@@ -7,10 +7,17 @@ import type {
 } from '../types.js';
 import { csExtractor } from './cs.js';
 import { goExtractor } from './go.js';
+import { javaExtractor } from './java.js';
 import { pyExtractor } from './py.js';
 import { tsExtractor } from './ts.js';
 
-export const extractors: LanguageExtractor[] = [tsExtractor, pyExtractor, csExtractor, goExtractor];
+export const extractors: LanguageExtractor[] = [
+  tsExtractor,
+  pyExtractor,
+  csExtractor,
+  goExtractor,
+  javaExtractor,
+];
 
 export function extractorFor(path: string): LanguageExtractor | undefined {
   return extractors.find((e) => e.matches(path));

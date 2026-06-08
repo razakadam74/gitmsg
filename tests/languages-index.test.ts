@@ -3,6 +3,7 @@ import type { FileChange } from '../src/types.js';
 import { extractorFor, extractors, symbolDelta } from '../src/languages/index.js';
 import { csExtractor } from '../src/languages/cs.js';
 import { goExtractor } from '../src/languages/go.js';
+import { javaExtractor } from '../src/languages/java.js';
 import { pyExtractor } from '../src/languages/py.js';
 import { tsExtractor } from '../src/languages/ts.js';
 
@@ -30,6 +31,10 @@ describe('extractors registry', () => {
   it('includes goExtractor', () => {
     expect(extractors).toContain(goExtractor);
   });
+
+  it('includes javaExtractor', () => {
+    expect(extractors).toContain(javaExtractor);
+  });
 });
 
 describe('extractorFor', () => {
@@ -49,6 +54,10 @@ describe('extractorFor', () => {
     expect(extractorFor(p)).toBe(goExtractor),
   );
 
+  it.each(['Foo.java', 'src/main/java/com/acme/Bar.java'])('returns javaExtractor for %s', (p) =>
+    expect(extractorFor(p)).toBe(javaExtractor),
+  );
+
   it.each([
     'a.rs',
     'a.gohtml',
@@ -64,6 +73,11 @@ describe('extractorFor', () => {
     'a.razor',
     'a.cshtml',
     'a.vb',
+    'a.jav',
+    'a.kt',
+    'a.scala',
+    'Foo.class',
+    'a.jsp',
   ])('returns undefined for %s', (p) => expect(extractorFor(p)).toBeUndefined());
 });
 
