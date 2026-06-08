@@ -1,4 +1,5 @@
 import type { CodeSymbol, LanguageExtractor } from '../types.js';
+import { runPatterns } from './runner.js';
 
 const PATTERNS: Array<{ re: RegExp; kind: CodeSymbol['kind']; callable?: boolean }> = [
   {
@@ -13,34 +14,13 @@ const PATTERNS: Array<{ re: RegExp; kind: CodeSymbol['kind']; callable?: boolean
   { re: /^\s*(?:\w+\s+)*?class\s+(\w+)/, kind: 'class' },
 ];
 
+const EXPORT_RE = /^\s*public\s+/;
+
 export const csExtractor: LanguageExtractor = {
   matches(path: string): boolean {
     return /\.csx?$/.test(path);
   },
-  extract(lines: string[]): CodeSymbol[] {
-    const symbols: CodeSymbol[] = [];
-    const seen = new Set<string>();
-
-    for (const line of lines) {
-      for (const { re, kind, callable } of PATTERNS) {
-        const m = re.exec(line);
-        if (m && m[1]) {
-          const name = m[1];
-          const exported = /^\s*public\s/.test(line);
-          const key = `${kind}:${name}:${exported}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            const sym: CodeSymbol = { kind, name, exported };
-            if (callable) {
-              const p = /\(([^)]*)\)/.exec(line);
-              if (p) sym.params = p[1] ?? '';
-            }
-            symbols.push(sym);
-          }
-          break;
-        }
-      }
-    }
-    return symbols;
+  extract(lines: string[]) {
+    return runPatterns(lines, PATTERNS, (line) => EXPORT_RE.test(line));
   },
 };
