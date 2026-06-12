@@ -5,6 +5,7 @@ import { csExtractor } from '../src/languages/cs.js';
 import { goExtractor } from '../src/languages/go.js';
 import { javaExtractor } from '../src/languages/java.js';
 import { pyExtractor } from '../src/languages/py.js';
+import { rustExtractor } from '../src/languages/rust.js';
 import { tsExtractor } from '../src/languages/ts.js';
 
 const file = (overrides: Partial<FileChange> = {}): FileChange => ({
@@ -35,6 +36,10 @@ describe('extractors registry', () => {
   it('includes javaExtractor', () => {
     expect(extractors).toContain(javaExtractor);
   });
+
+  it('includes rustExtractor', () => {
+    expect(extractors).toContain(rustExtractor);
+  });
 });
 
 describe('extractorFor', () => {
@@ -58,8 +63,14 @@ describe('extractorFor', () => {
     expect(extractorFor(p)).toBe(javaExtractor),
   );
 
+  it.each(['a.rs', 'src/main.rs', 'crates/core/src/lib.rs'])('returns rustExtractor for %s', (p) =>
+    expect(extractorFor(p)).toBe(rustExtractor),
+  );
+
   it.each([
-    'a.rs',
+    'a.rss',
+    'Cargo.toml',
+    'a.rlib',
     'a.gohtml',
     'a.tmpl',
     'go.mod',
