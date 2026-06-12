@@ -63,6 +63,7 @@ Symbol-aware subject lines (e.g. `feat(auth): add rotateRefreshToken`) are suppo
 | C#                      | `.cs`, `.csx`                                |
 | Go                      | `.go`                                        |
 | Java                    | `.java`                                      |
+| Rust                    | `.rs`                                        |
 
 Files in other languages still get a sensible commit message — the subject just falls back to a generic verb (e.g. `docs: update README`, `feat(parser): refactor module`) instead of naming specific symbols. Adding a language is a small, well-scoped contribution; see the recipe in [`docs/heuristics.md`](docs/heuristics.md#adding-a-new-language).
 
@@ -98,7 +99,7 @@ Edit the message — `gitmsg --edit` opens your editor pre-filled. If a particul
 
 ## Status
 
-🚧 Early development. Published as [`@razakadam74/gitmsg`](https://www.npmjs.com/package/@razakadam74/gitmsg) with TypeScript/JavaScript, Python, C#, Go, and Java extractors. APIs and behaviour may still change before v1.0.
+🚧 Early development. Published as [`@razakadam74/gitmsg`](https://www.npmjs.com/package/@razakadam74/gitmsg) with TypeScript/JavaScript, Python, C#, Go, Java, and Rust extractors. APIs and behaviour may still change before v1.0.
 
 ## Contributing
 

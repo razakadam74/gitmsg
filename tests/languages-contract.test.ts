@@ -4,6 +4,7 @@ import { csExtractor } from '../src/languages/cs.js';
 import { goExtractor } from '../src/languages/go.js';
 import { javaExtractor } from '../src/languages/java.js';
 import { pyExtractor } from '../src/languages/py.js';
+import { rustExtractor } from '../src/languages/rust.js';
 import { tsExtractor } from '../src/languages/ts.js';
 
 const allCases: Array<{ name: string; ex: LanguageExtractor; classLine: string }> = [
@@ -12,6 +13,7 @@ const allCases: Array<{ name: string; ex: LanguageExtractor; classLine: string }
   { name: 'cs', ex: csExtractor, classLine: 'public class Foo {}' },
   { name: 'go', ex: goExtractor, classLine: 'type Foo struct {}' },
   { name: 'java', ex: javaExtractor, classLine: 'public class Foo {}' },
+  { name: 'rust', ex: rustExtractor, classLine: 'pub struct Foo {}' },
 ];
 
 const callableCases: Array<{
@@ -34,6 +36,12 @@ const callableCases: Array<{
     callLine: 'public delegate int Bar();',
   },
   { name: 'go', ex: goExtractor, classLine: 'type Foo struct {}', callLine: 'func Bar() {}' },
+  {
+    name: 'rust',
+    ex: rustExtractor,
+    classLine: 'pub struct Foo {}',
+    callLine: 'pub fn bar() {}',
+  },
 ];
 
 describe('Language contract — all extractors', () => {

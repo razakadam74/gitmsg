@@ -9,6 +9,7 @@ import { csExtractor } from './cs.js';
 import { goExtractor } from './go.js';
 import { javaExtractor } from './java.js';
 import { pyExtractor } from './py.js';
+import { rustExtractor } from './rust.js';
 import { tsExtractor } from './ts.js';
 
 export const extractors: LanguageExtractor[] = [
@@ -17,6 +18,7 @@ export const extractors: LanguageExtractor[] = [
   csExtractor,
   goExtractor,
   javaExtractor,
+  rustExtractor,
 ];
 
 export function extractorFor(path: string): LanguageExtractor | undefined {
