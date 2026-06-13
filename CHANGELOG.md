@@ -1,5 +1,11 @@
 # @razakadam74/gitmsg
 
+## 0.9.0
+
+### Minor Changes
+
+- 2312ce1: Generate specific commit subjects for unambiguous npm dependency changes.
+
 ## 0.8.0
 
 ### Minor Changes
