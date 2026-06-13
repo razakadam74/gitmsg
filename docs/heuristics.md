@@ -106,11 +106,13 @@ Operates on the commit type plus the `SymbolDelta` from language extractors plus
 | `test`          | (depends on whether the file names share a subject) — see below                           | `add tests` / `update tests` |
 | `ci`            | `update <name> workflow`                                                                  | `update CI configuration`    |
 | `build`         | `update <name> build config`                                                              | `update build configuration` |
-| `chore` (deps)  | `update dependencies`                                                                     | `update dependencies`        |
+| `chore` (deps)  | Specific npm change when unambiguous; otherwise `update dependencies`                     | `update dependencies`        |
 | `chore` (other) | `misc maintenance`                                                                        | `misc maintenance`           |
 | `style`         | `apply formatting`                                                                        | `apply formatting`           |
 
 For `test`: the base names are stripped of `.test`/`.spec` suffixes and `test_`/`test-` prefixes. If all paths reduce to the same name, the subject is `add tests for <name>`; otherwise it falls back to `add tests` (if any file is new) or `update tests`.
+
+For npm dependency changes, `package.json` is the source of truth and generated lockfile entries are ignored. A single unambiguous change produces `pin <name> to <version>` for a new override, `bump <name> from <old> to <new>` for a version change, `add <name> <version>`, or `remove <name>`. Multiple unambiguous package changes produce `update <name> and <name>` with compact list wording for larger groups. Root package metadata, scripts, lockfile-only changes, and multiple manifests fall back to `update dependencies`.
 
 ### Symbol-driven phrasing (`feat` / `fix` / `refactor` / `perf`)
 

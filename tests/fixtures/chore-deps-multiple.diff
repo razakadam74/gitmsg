@@ -1,0 +1,29 @@
+diff --git a/package.json b/package.json
+index aaa1111..bbb2222 100644
+--- a/package.json
++++ b/package.json
+@@ -30,6 +30,6 @@
+   "devDependencies": {
+-    "vitest": "^4.1.6",
+-    "prettier": "3.8.3"
++    "vitest": "^4.1.8",
++    "prettier": "3.8.4"
+   }
+ }
+diff --git a/package-lock.json b/package-lock.json
+index ccc3333..ddd4444 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -20,6 +20,6 @@
+       "devDependencies": {
+-        "vitest": "^4.1.6",
+-        "prettier": "3.8.3"
++        "vitest": "^4.1.8",
++        "prettier": "3.8.4"
+       }
+@@ -100,2 +100,2 @@
+-      "version": "3.8.3",
++      "version": "3.8.4",
+@@ -200,2 +200,2 @@
+-      "version": "4.1.6",
++      "version": "4.1.8",

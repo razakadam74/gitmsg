@@ -1,5 +1,6 @@
 import { basename } from 'node:path';
 import type { CommitType, FileChange, SymbolDelta } from '../types.js';
+import { detectDependencySubject } from './dependencies.js';
 import { DEPS_PATTERN } from './patterns.js';
 
 function baseName(p: string): string {
@@ -50,7 +51,7 @@ export function detectSubject({ type, files, symbols }: SubjectInput): string {
 
   if (type === 'chore') {
     const isDeps = files.every((f) => DEPS_PATTERN.test(f.path));
-    if (isDeps) return 'update dependencies';
+    if (isDeps) return detectDependencySubject(files) ?? 'update dependencies';
     return 'misc maintenance';
   }
 
