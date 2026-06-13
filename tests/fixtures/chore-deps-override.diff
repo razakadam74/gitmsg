@@ -1,0 +1,18 @@
+diff --git a/package.json b/package.json
+index 66e24ad..85a4e6f 100644
+--- a/package.json
++++ b/package.json
+@@ -64,5 +64,8 @@
+     "vitest": "^4.1.6"
++  },
++  "overrides": {
++    "esbuild": "0.28.1"
+   }
+ }
+diff --git a/package-lock.json b/package-lock.json
+index 0e102b2..811813b 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -2699,3 +2699,3 @@
+-      "version": "0.27.7",
++      "version": "0.28.1",

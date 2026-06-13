@@ -1,0 +1,25 @@
+diff --git a/package.json b/package.json
+index aaa1111..bbb2222 100644
+--- a/package.json
++++ b/package.json
+@@ -20,6 +20,5 @@
+   "dependencies": {
+     "commander": "14.0.0",
+-    "lodash": "^4.17.21"
+   }
+ }
+diff --git a/package-lock.json b/package-lock.json
+index ccc3333..ddd4444 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -12,6 +12,5 @@
+       "dependencies": {
+         "commander": "14.0.0",
+-        "lodash": "^4.17.21"
+       }
+@@ -100,5 +98,0 @@
+-    "node_modules/lodash": {
+-      "version": "4.17.21",
+-      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
+-      "integrity": "sha512-example"
+-    }
